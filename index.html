@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>18° Fede - Trova il tuo Posto</title>
+
+<style>
+:root {
+    --magenta-deep: #880e4f;
+    --magenta-bright: #c2185b;
+    --pink-soft: #fce4ec;
+    --glass-bg: rgba(255, 255, 255, 0.9);
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #ad1457 0%, var(--magenta-deep) 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #2d0a1a;
+}
+
+.container {
+    width: 90%;
+    max-width: 450px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 40px 25px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+h1 {
+    color: var(--magenta-bright);
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+p {
+    opacity: 0.8;
+    margin-bottom: 30px;
+    font-style: italic;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 18px;
+    border-radius: 15px;
+    border: 2px solid var(--pink-soft);
+    font-size: 16px;
+    text-align: center;
+}
+
+.btn-search {
+    background: var(--magenta-bright);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 18px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    cursor: pointer;
+}
+
+.btn-search:hover {
+    background: var(--magenta-deep);
+}
+
+#result {
+    margin-top: 35px;
+    display: none;
+    text-align: left;
+}
+
+.table-display {
+    background: var(--magenta-bright);
+    color: white;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.table-display small {
+    font-size: 12px;
+}
+
+.table-display div {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.guests-list {
+    list-style: none;
+    padding: 0;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.guests-list li {
+    padding: 12px;
+    background: rgba(194, 24, 91, 0.05);
+    margin-bottom: 8px;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Fede 18 🌸</h1>
+    <p>Scopri il tuo tavolo per la serata</p>
+
+    <input type="text" id="nameInput" placeholder="Inserisci Nome e Cognome...">
+    <button class="btn-search" onclick="cercaTavolo()">CERCA POSTO</button>
+
+    <div id="result">
+        <div class="table-display">
+            <small>Il tuo tavolo è:</small>
+            <div id="tableName"></div>
+        </div>
+
+        <strong>I tuoi compagni di tavolo:</strong>
+        <ul class="guests-list" id="guestsList"></ul>
+    </div>
+</div>
+
+<script>
+const databaseInvitati = [
+
+/* DIAMANTE */
+{ Nome: "Federica Saviano", Tavolo: "Diamante" },
+{ Nome: "Ludovica Di Giuseppe", Tavolo: "Diamante" },
+{ Nome: "Maria Zunico", Tavolo: "Diamante" },
+{ Nome: "Cristina Falco", Tavolo: "Diamante" },
+{ Nome: "Francesco Scognamiglio", Tavolo: "Diamante" },
+{ Nome: "Giada Fabiano", Tavolo: "Diamante" },
+{ Nome: "Roberto D'Aniello", Tavolo: "Diamante" },
+{ Nome: "Arianna Di Milano", Tavolo: "Diamante" },
+{ Nome: "Martina Carpino", Tavolo: "Diamante" },
+{ Nome: "Michela Colasurdo", Tavolo: "Diamante" },
+{ Nome: "Francesca Saviano", Tavolo: "Diamante" },
+
+/* RUBINO */
+{ Nome: "Caterina Orefice", Tavolo: "Rubino" },
+{ Nome: "Mariateresa Sorriso", Tavolo: "Rubino" },
+{ Nome: "Francesco Liguori", Tavolo: "Rubino" },
+{ Nome: "Rosy Rasulo", Tavolo: "Rubino" },
+{ Nome: "Vincenzo Cristofaro", Tavolo: "Rubino" },
+{ Nome: "Luigi Martiniello", Tavolo: "Rubino" },
+{ Nome: "Diego Ganzerli", Tavolo: "Rubino" },
+{ Nome: "Andrea Liguori", Tavolo: "Rubino" },
+{ Nome: "Luigi Di Micco", Tavolo: "Rubino" },
+{ Nome: "Rocco Di Micco", Tavolo: "Rubino" },
+{ Nome: "Rosa Bencivenga", Tavolo: "Rubino" },
+{ Nome: "Rossella D'Angelo", Tavolo: "Rubino" },
+
+/* TOPAZIO */
+{ Nome: "Arianna Gallo", Tavolo: "Topazio" },
+{ Nome: "Matilde Granata", Tavolo: "Topazio" },
+{ Nome: "Dalila Iavarone", Tavolo: "Topazio" },
+{ Nome: "Rosi Marzio", Tavolo: "Topazio" },
+{ Nome: "Giulia Palmieri", Tavolo: "Topazio" },
+{ Nome: "Laura Ombrato", Tavolo: "Topazio" },
+{ Nome: "Flora D'Errico", Tavolo: "Topazio" },
+{ Nome: "Francesca Pia Marone", Tavolo: "Topazio" },
+{ Nome: "Francesca Dello Iacono", Tavolo: "Topazio" },
+{ Nome: "Giulia Cimmino", Tavolo: "Topazio" },
+
+/* AMETISTA */
+{ Nome: "Luisa Di Mauro", Tavolo: "Ametista" },
+{ Nome: "Alessandra Cesaro", Tavolo: "Ametista" },
+{ Nome: "Giovanna Tramma", Tavolo: "Ametista" },
+{ Nome: "Alessandra Cristofaro", Tavolo: "Ametista" },
+{ Nome: "Alessandro Di Lorenzo", Tavolo: "Ametista" },
+{ Nome: "Martina Leo", Tavolo: "Ametista" },
+{ Nome: "Beatrice Di Giuseppe", Tavolo: "Ametista" },
+{ Nome: "Alessia Margarita", Tavolo: "Ametista" },
+{ Nome: "Matteo Margarita", Tavolo: "Ametista" },
+{ Nome: "Angela Borrelli", Tavolo: "Ametista" },
+{ Nome: "Agostino Borrelli", Tavolo: "Ametista" },
+
+/* ZAFFIRO */
+{ Nome: "Andrea Gallo", Tavolo: "Zaffiro" },
+{ Nome: "Marco Lettiero", Tavolo: "Zaffiro" },
+{ Nome: "Adriana Sepe", Tavolo: "Zaffiro" },
+{ Nome: "Rossella Iovine", Tavolo: "Zaffiro" },
+{ Nome: "Umberto Coppola", Tavolo: "Zaffiro" },
+{ Nome: "Ginevra Bagno", Tavolo: "Zaffiro" },
+{ Nome: "Andrea Grimaldi", Tavolo: "Zaffiro" },
+{ Nome: "Ludovica Penne", Tavolo: "Zaffiro" },
+{ Nome: "Magda Sessa", Tavolo: "Zaffiro" },
+{ Nome: "Bruno Arise", Tavolo: "Zaffiro" },
+
+/* GIADA */
+{ Nome: "Mario Saviano", Tavolo: "Giada" },
+{ Nome: "Francesca D'Ambrosio", Tavolo: "Giada" },
+{ Nome: "Serena Rapido", Tavolo: "Giada" },
+{ Nome: "Maria Ratto", Tavolo: "Giada" },
+{ Nome: "Grazia Moccia", Tavolo: "Giada" },
+{ Nome: "Luca Cosentino", Tavolo: "Giada" },
+{ Nome: "Rebecca Pezzella", Tavolo: "Giada" },
+{ Nome: "Giuseppe Fornito", Tavolo: "Giada" },
+{ Nome: "Federica D'Ambrosio", Tavolo: "Giada" },
+{ Nome: "Lorena Tecame", Tavolo: "Giada" },
+
+/* SMERALDO */
+{ Nome: "Giovanna Saviano", Tavolo: "Smeraldo" },
+{ Nome: "Giovanni Amirante", Tavolo: "Smeraldo" },
+{ Nome: "Carolina Ambrosino", Tavolo: "Smeraldo" },
+{ Nome: "Paola Ambrosino", Tavolo: "Smeraldo" },
+{ Nome: "Carolina Celiento", Tavolo: "Smeraldo" },
+{ Nome: "Mariateresa Celiento", Tavolo: "Smeraldo" },
+{ Nome: "Ciccio Russo", Tavolo: "Smeraldo" },
+{ Nome: "Cinzia Borrelli", Tavolo: "Smeraldo" },
+{ Nome: "Yulia Russo", Tavolo: "Smeraldo" },
+{ Nome: "Antonio Aloi", Tavolo: "Smeraldo" },
+{ Nome: "Andrea Saviano", Tavolo: "Smeraldo" },
+{ Nome: "Francesca Franzese", Tavolo: "Smeraldo" },
+
+/* AMBRA */
+{ Nome: "Conny Cavaliere", Tavolo: "Ambra" },
+{ Nome: "Raffaella Granata", Tavolo: "Ambra" },
+{ Nome: "Antonietta Gaudino", Tavolo: "Ambra" },
+{ Nome: "Fabio Capasso", Tavolo: "Ambra" },
+{ Nome: "Melissa Migliaccio", Tavolo: "Ambra" },
+{ Nome: "Rosa Luongo", Tavolo: "Ambra" },
+{ Nome: "Vincettore Anatriello", Tavolo: "Ambra" },
+{ Nome: "Erika Perrotta", Tavolo: "Ambra" },
+{ Nome: "Biagio Cennamo", Tavolo: "Ambra" },
+{ Nome: "Sabrina Cirillo", Tavolo: "Ambra" },
+{ Nome: "Antonio Papaccioli", Tavolo: "Ambra" },
+
+/* ACQUAMARINA */
+{ Nome: "Sonia Orefice", Tavolo: "Acquamarina" },
+{ Nome: "Manuela Casaburi", Tavolo: "Acquamarina" },
+{ Nome: "Arianna Casaburi", Tavolo: "Acquamarina" },
+{ Nome: "Martina Martorelli", Tavolo: "Acquamarina" },
+{ Nome: "Mariateresa Capasso", Tavolo: "Acquamarina" },
+{ Nome: "Domenica Reccia", Tavolo: "Acquamarina" },
+{ Nome: "Angela Cappa", Tavolo: "Acquamarina" },
+{ Nome: "Colomba Franzese", Tavolo: "Acquamarina" },
+{ Nome: "Giuliana Cristiano", Tavolo: "Acquamarina" },
+{ Nome: "Antonietta Giametta", Tavolo: "Acquamarina" },
+
+/* TANZANITE */
+{ Nome: "Maria Rosa Volpicelli", Tavolo: "Tanzanite" },
+{ Nome: "Sabrina Pisano", Tavolo: "Tanzanite" },
+{ Nome: "Ginevra Giovine", Tavolo: "Tanzanite" },
+{ Nome: "Emily Onorato", Tavolo: "Tanzanite" },
+{ Nome: "Francesco Eletto", Tavolo: "Tanzanite" },
+{ Nome: "Bernadette Rega", Tavolo: "Tanzanite" },
+{ Nome: "Andrea Alborino", Tavolo: "Tanzanite" },
+{ Nome: "Ludovica Puzio", Tavolo: "Tanzanite" },
+{ Nome: "Carlotta Barbato", Tavolo: "Tanzanite" },
+{ Nome: "Martina D'Errico", Tavolo: "Tanzanite" },
+{ Nome: "Valeria Alvino", Tavolo: "Tanzanite" },
+
+/* OPALE */
+{ Nome: "Teresa Auletta", Tavolo: "Opale" },
+{ Nome: "Mariagrazia Vitale", Tavolo: "Opale" },
+{ Nome: "Carmen Pia Pezzella", Tavolo: "Opale" },
+{ Nome: "Francesca Copertino", Tavolo: "Opale" },
+{ Nome: "Anna Mascia", Tavolo: "Opale" },
+{ Nome: "Martina Falco", Tavolo: "Opale" },
+{ Nome: "Ida Iazzetta", Tavolo: "Opale" },
+{ Nome: "Maria Pia Fontanella", Tavolo: "Opale" },
+
+/* GRANATO */
+{ Nome: "Roberta Maria Alvino", Tavolo: "Granato" },
+{ Nome: "Christian Brocchieri", Tavolo: "Granato" },
+{ Nome: "Samuele Rocco Pisano", Tavolo: "Granato" },
+{ Nome: "Pasquale Ratto", Tavolo: "Granato" },
+{ Nome: "Rocco Saviano", Tavolo: "Granato" },
+{ Nome: "Michelangelo Schioppi", Tavolo: "Granato" },
+{ Nome: "Pasquale Approvato", Tavolo: "Granato" },
+{ Nome: "Christian di Giorgio", Tavolo: "Granato" },
+{ Nome: "Luigi Farinelli", Tavolo: "Granato" },
+{ Nome: "Giuseppe Bencivenga", Tavolo: "Granato" },
+
+/* TORMALINA */
+{ Nome: "Domenico Orefice", Tavolo: "Tormalina" },
+{ Nome: "Luigi Mazza", Tavolo: "Tormalina" },
+{ Nome: "Francesco Varone", Tavolo: "Tormalina" },
+{ Nome: "Gregorio Gondola", Tavolo: "Tormalina" },
+{ Nome: "Flora Alborino", Tavolo: "Tormalina" },
+{ Nome: "Ilaria Baffico", Tavolo: "Tormalina" },
+{ Nome: "Anna di Sarno", Tavolo: "Tormalina" },
+{ Nome: "Francesca Galbera", Tavolo: "Tormalina" },
+{ Nome: "Sara Russiello", Tavolo: "Tormalina" },
+{ Nome: "Antonio Vitale", Tavolo: "Tormalina" },
+
+/* OCCHIO DI TIGRE */
+{ Nome: "Dario Ganzerli", Tavolo: "Occhio di tigre" },
+{ Nome: "Silvio Tessitore", Tavolo: "Occhio di tigre" },
+{ Nome: "Gugliemo Nappa", Tavolo: "Occhio di tigre" },
+{ Nome: "Arianna Livigni", Tavolo: "Occhio di tigre" },
+{ Nome: "Giuseppe Russo Maria", Tavolo: "Occhio di tigre" },
+{ Nome: "Aurora Vitale", Tavolo: "Occhio di tigre" },
+{ Nome: "Giulia Spena", Tavolo: "Occhio di tigre" },
+{ Nome: "Lidia Gifuni", Tavolo: "Occhio di tigre" },
+{ Nome: "Valeria Barone", Tavolo: "Occhio di tigre" },
+{ Nome: "MariaTeresa Guerra", Tavolo: "Occhio di tigre" }
+
+];
+
+function normalizza(str) {
+    return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // rimuove accenti
+        .trim();
+}
+
+// distanza di Levenshtein (tolleranza errori)
+function distanza(a, b) {
+    const matrix = [];
+
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+function cercaTavolo() {
+    const inputRaw = document.getElementById('nameInput').value;
+    const input = normalizza(inputRaw);
+
+    if (!input) {
+        alert("Inserisci un nome!");
+        return;
+    }
+
+    let persona = null;
+
+    // 🔎 1. Match diretto o parziale
+    persona = databaseInvitati.find(p =>
+        normalizza(p.Nome).includes(input)
+    );
+
+    // 🔎 2. Se non trova, prova con tolleranza errori
+    if (!persona) {
+        let migliore = null;
+        let distanzaMin = Infinity;
+
+        databaseInvitati.forEach(p => {
+            const nomeNorm = normalizza(p.Nome);
+            const d = distanza(input, nomeNorm);
+
+            if (d < distanzaMin) {
+                distanzaMin = d;
+                migliore = p;
+            }
+        });
+
+        // soglia errore (più basso = più preciso)
+        if (distanzaMin <= 3) {
+            persona = migliore;
+        }
+    }
+
+    if (persona) {
+        document.getElementById('tableName').innerText = persona.Tavolo;
+
+        const compagni = databaseInvitati.filter(p =>
+            p.Tavolo === persona.Tavolo &&
+            normalizza(p.Nome) !== normalizza(persona.Nome)
+        );
+
+        document.getElementById('guestsList').innerHTML =
+            compagni.map(c => `<li>🌸 ${c.Nome}</li>`).join('');
+
+        document.getElementById('result').style.display = 'block';
+    } else {
+        alert("Nome non trovato.");
+    }
+}
+</script>
+
+</body>
+</html>
